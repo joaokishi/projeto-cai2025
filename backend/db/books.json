@@ -1,14 +1,14 @@
 [
   {
-    "title": "b",
-    "authors": "b",
-    "isbn": "b",
-    "edition": "b",
-    "year": "b",
-    "publisher": "b",
-    "pageCount": "b",
-    "buyLink": "b",
-    "coverImage": "b",
-    "id": 1744350456294
+    "title": "e",
+    "authors": "e",
+    "isbn": "e",
+    "edition": "e",
+    "year": "e",
+    "publisher": "e",
+    "pages": "e",
+    "image": "e",
+    "purchase_link": "f",
+    "id": 1744351624154
   }
 ]

@@ -11,7 +11,7 @@ function BookList({ books, onEdit, onDelete }) {
           <p><strong>Edition:</strong> {book.edition}</p>
           <p><strong>Year:</strong> {book.year}</p>
           <p><strong>Publisher:</strong> {book.publisher}</p>
-          <p><strong>Page Count:</strong> {book.pageCount}</p>
+          <p><strong>Page Count:</strong> {book.pages}</p>
           <p><strong>Buy Link:</strong> 
             {book.buyLink ? (
               <a href={book.buyLink} target="_blank" rel="noopener noreferrer">

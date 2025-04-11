@@ -1,58 +1,75 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
-function BookForm({ onSubmit, initialData, onCancel }) {
-  const [book, setBook] = useState({
+function BookForm({ onSubmit, editingBook }) {
+  const [formData, setFormData] = useState({
     title: '',
     authors: '',
     isbn: '',
     edition: '',
     year: '',
     publisher: '',
-    pageCount: '',
-    buyLink: '',
-    coverImage: ''
+    pages: '',
+    image: '',
+    purchase_link: ''
   });
 
   useEffect(() => {
-    if (initialData) {
-      setBook(initialData);
+    if (editingBook) {
+      setFormData(editingBook);
+    } else {
+      // Se não estiver editando, limpa o formulário
+      setFormData({
+        title: '',
+        authors: '',
+        isbn: '',
+        edition: '',
+        year: '',
+        publisher: '',
+        pages: '',
+        image: '',
+        purchase_link: ''
+      });
     }
-  }, [initialData]);
+  }, [editingBook]);
 
   const handleChange = (e) => {
-    setBook({ ...book, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!book.title || !book.authors) return;
-    onSubmit(book);
-    setBook({
+    onSubmit(formData);
+
+    // Limpa o formulário após adicionar ou editar
+    setFormData({
       title: '',
       authors: '',
       isbn: '',
       edition: '',
       year: '',
       publisher: '',
-      pageCount: '',
-      buyLink: '',
-      coverImage: ''
+      pages: '',
+      image: '',
+      purchase_link: ''
     });
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: '1rem' }}>
-      <input name="title" placeholder="Title" value={book.title} onChange={handleChange} required />
-      <input name="authors" placeholder="Authors" value={book.authors} onChange={handleChange} required />
-      <input name="isbn" placeholder="ISBN" value={book.isbn} onChange={handleChange} />
-      <input name="edition" placeholder="Edition" value={book.edition} onChange={handleChange} />
-      <input name="year" placeholder="Year" value={book.year} onChange={handleChange} />
-      <input name="publisher" placeholder="Publisher" value={book.publisher} onChange={handleChange} />
-      <input name="pageCount" placeholder="Page Count" value={book.pageCount} onChange={handleChange} />
-      <input name="buyLink" placeholder="Buy Link" value={book.buyLink} onChange={handleChange} />
-      <input name="coverImage" placeholder="Cover Image URL" value={book.coverImage} onChange={handleChange} />
-      <button type="submit">{initialData ? 'Update' : 'Add'} Book</button>
-      {initialData && <button type="button" onClick={onCancel}>Cancel</button>}
+    <form className="book-form" onSubmit={handleSubmit}>
+      <input type="text" name="title" placeholder="Title" value={formData.title} onChange={handleChange} required />
+      <input type="text" name="authors" placeholder="Authors" value={formData.authors} onChange={handleChange} />
+      <input type="text" name="isbn" placeholder="ISBN" value={formData.isbn} onChange={handleChange} />
+      <input type="text" name="edition" placeholder="Edition" value={formData.edition} onChange={handleChange} />
+      <input type="text" name="year" placeholder="Year" value={formData.year} onChange={handleChange} />
+      <input type="text" name="publisher" placeholder="Publisher" value={formData.publisher} onChange={handleChange} />
+      <input type="text" name="pages" placeholder="Number of Pages" value={formData.pages} onChange={handleChange} />
+      <input type="text" name="image" placeholder="Cover Image URL" value={formData.image} onChange={handleChange} />
+      <input type="text" name="purchase_link" placeholder="Purchase Link" value={formData.purchase_link} onChange={handleChange} />
+      <button type="submit">{editingBook ? 'Update' : 'Add'} Book</button>
     </form>
   );
 }

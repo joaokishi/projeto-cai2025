@@ -1,65 +1,77 @@
 const express = require('express');
-const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const cors = require('cors');
+
 const app = express();
-const port = 3001;
-const dataPath = path.join(__dirname, 'db', 'books.json');
+const PORT = 3001;
+const DB_PATH = path.join(__dirname, 'db', 'books.json');
 
 app.use(cors());
 app.use(express.json());
 
-function loadBooks() {
-  if (!fs.existsSync(dataPath)) {
-    fs.writeFileSync(dataPath, '[]');
-  }
-  const data = fs.readFileSync(dataPath);
-  return JSON.parse(data);
-}
-
-function saveBooks(books) {
-  fs.writeFileSync(dataPath, JSON.stringify(books, null, 2));
-}
-
-let books = loadBooks();
-
-app.get('/api/books', (req, res) => {
-  res.json(books);
+// GET all books
+app.get('/books', (req, res) => {
+  fs.readFile(DB_PATH, 'utf-8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read database.' });
+    res.json(JSON.parse(data || '[]'));
+  });
 });
 
-app.post('/api/books', (req, res) => {
+// POST a new book
+app.post('/books', (req, res) => {
   const newBook = req.body;
-  newBook.id = Date.now();
-  books.push(newBook);
-  saveBooks(books);
-  res.status(201).json(newBook);
+  fs.readFile(DB_PATH, 'utf-8', (err, data) => {
+    let books = [];
+    if (!err && data) books = JSON.parse(data);
+    newBook.id = Date.now();
+    books.push(newBook);
+
+    fs.writeFile(DB_PATH, JSON.stringify(books, null, 2), err => {
+      if (err) return res.status(500).json({ error: 'Failed to write database.' });
+      res.status(201).json(newBook);
+    });
+  });
 });
 
-app.put('/api/books/:id', (req, res) => {
-  const { id } = req.params;
-  const index = books.findIndex(book => book.id == id);
-  if (index !== -1) {
-    books[index] = { ...books[index], ...req.body };
-    saveBooks(books);
-    res.json(books[index]);
-  } else {
-    res.status(404).json({ message: 'Book not found.' });
-  }
+// PUT (edit)
+app.put('/books/:id', (req, res) => {
+  const bookId = parseInt(req.params.id);
+  const updatedBook = req.body;
+
+  fs.readFile(DB_PATH, 'utf-8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read database.' });
+
+    let books = JSON.parse(data);
+    const index = books.findIndex(b => b.id === bookId);
+    if (index === -1) return res.status(404).json({ error: 'Book not found.' });
+
+    books[index] = { ...books[index], ...updatedBook };
+
+    fs.writeFile(DB_PATH, JSON.stringify(books, null, 2), err => {
+      if (err) return res.status(500).json({ error: 'Failed to update database.' });
+      res.json(books[index]);
+    });
+  });
 });
 
-app.delete('/api/books/:id', (req, res) => {
-  const { id } = req.params;
-  books = books.filter(book => book.id != id);
-  saveBooks(books);
-  res.status(204).send();
+// DELETE
+app.delete('/books/:id', (req, res) => {
+  const bookId = parseInt(req.params.id);
+  fs.readFile(DB_PATH, 'utf-8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read database.' });
+
+    let books = JSON.parse(data);
+    books = books.filter(b => b.id !== bookId);
+
+    fs.writeFile(DB_PATH, JSON.stringify(books, null, 2), err => {
+      if (err) return res.status(500).json({ error: 'Failed to write database.' });
+      res.status(204).end();
+    });
+  });
 });
 
-app.post('/api/reset', (req, res) => {
-  books = [];
-  saveBooks(books);
-  res.json({ message: 'All books have been reset.' });
-});
-
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+// Start server
+app.listen(PORT, () => {
+  console.log(`✅ Server running at http://localhost:${PORT}`);
 });

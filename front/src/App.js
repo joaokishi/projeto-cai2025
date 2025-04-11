@@ -1,63 +1,68 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import BookForm from './components/BookForm';
 import BookList from './components/BookList';
 import './App.css';
+import Navbar from './Navbar';
 
 function App() {
   const [books, setBooks] = useState([]);
+  const [page, setPage] = useState('home');
   const [editingBook, setEditingBook] = useState(null);
+
+  const fetchBooks = async () => {
+    const response = await fetch('http://localhost:3001/books');
+    const data = await response.json();
+    setBooks(data);
+  };
 
   useEffect(() => {
     fetchBooks();
   }, []);
 
-  const fetchBooks = async () => {
-    const response = await fetch('http://localhost:3001/api/books');
-    const data = await response.json();
-    setBooks(data);
-  };
+  const handleAddOrEdit = async (book) => {
+    if (book.id) {
+      await fetch(`http://localhost:3001/books/${book.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(book),
+      });
+    } else {
+      await fetch('http://localhost:3001/books', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(book),
+      });
+    }
 
-  const addBook = async (book) => {
-    const response = await fetch('http://localhost:3001/api/books', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(book),
-    });
-    const newBook = await response.json();
-    setBooks([...books, newBook]);
-  };
-
-  const updateBook = async (book) => {
-    const response = await fetch(`http://localhost:3001/api/books/${book.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(book),
-    });
-    const updatedBook = await response.json();
-    setBooks(books.map(b => b.id === updatedBook.id ? updatedBook : b));
+    fetchBooks();
     setEditingBook(null);
+    setPage('home');
   };
 
-  const deleteBook = async (id) => {
-    await fetch(`http://localhost:3001/api/books/${id}`, {
+  const handleDelete = async (id) => {
+    await fetch(`http://localhost:3001/books/${id}`, {
       method: 'DELETE',
     });
-    setBooks(books.filter(b => b.id !== id));
+
+    fetchBooks();
   };
 
   const handleEdit = (book) => {
     setEditingBook(book);
+    setPage('add');
   };
 
   return (
-    <div className="container" style={{ padding: '1rem', maxWidth: '600px', margin: 'auto' }}>
-      <h1 style={{ textAlign: 'center' }}>Book Manager</h1>
-      <BookForm
-        onSubmit={editingBook ? updateBook : addBook}
-        initialData={editingBook}
-        onCancel={() => setEditingBook(null)}
-      />
-      <BookList books={books} onEdit={handleEdit} onDelete={deleteBook} />
+    <div className="container">
+      <Navbar setPage={setPage} />
+
+      {page === 'home' && (
+        <BookList books={books} onEdit={handleEdit} onDelete={handleDelete} />
+      )}
+
+      {page === 'add' && (
+        <BookForm onSubmit={handleAddOrEdit} editingBook={editingBook} />
+      )}
     </div>
   );
 }
