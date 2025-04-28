@@ -17,7 +17,6 @@ function BookForm({ onSubmit, editingBook }) {
     if (editingBook) {
       setFormData(editingBook);
     } else {
-      // Se não estiver editando, limpa o formulário
       setFormData({
         title: '',
         authors: '',
@@ -43,8 +42,6 @@ function BookForm({ onSubmit, editingBook }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(formData);
-
-    // Limpa o formulário após adicionar ou editar
     setFormData({
       title: '',
       authors: '',
